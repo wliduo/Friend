@@ -29,7 +29,7 @@
       <!-- <p class="quote-content animate-slide-in-down">不积跬步，无以至千里。不积小流，无以成江海。</p>
       <p class="quote-author animate-slide-in-down">《劝学篇》—— <em>荀子</em></p> -->
       <p id="title" class="quote-content animate-slide-in-down">这个世界上没有天才，只有不努力的笨蛋</p>
-      <p class="quote-author animate-slide-in-down"></p>
+      <p class="quote-author animate-slide-in-down">-「<span id="author">随心</span>」</p>
       <span class="quote-icon quote-icon-end animate-slide-in-up">
         <i class="icon icon-quotes-right"></i>
       </span>
@@ -198,7 +198,7 @@
         });
       }
 
-      function randomText () {
+      function randomText() {
         // 重置索引i和文字
         i = 0;
         str = data[randomIndex];
@@ -211,7 +211,7 @@
         randomIndex = index
       }
 
-      function typing () {
+      function typing() {
         // 打字
         if (i <= str.length) {
           if (i === str.length) {
@@ -230,8 +230,8 @@
           }, 1500);
         }
       }
-      
-      function clearTitle () {
+
+      function clearTitle() {
         // 删除文字
         if (i >= 0) {
           $('#title').html(str.slice(0, i--) + '_');
@@ -241,15 +241,49 @@
         } else {
           clearTimeout(timer);
           // 删除完成重置
+          start();
+        }
+      }
+
+      function start() {
+        try {
+          // 步骤一: 创建异步对象
+          var ajax = new XMLHttpRequest();
+          if (window.XMLHttpRequest) {
+            ajax = new XMLHttpRequest();
+          } else {
+            // IE6及其以下版本浏览器
+            ajax = new ActiveXObject('Microsoft.XMLHTTP');
+          }
+          // 步骤二: 设置请求的url参数 参数一是请求的类型 参数二是请求的url 可以带参数 动态的传递参数starName到服务端
+          // ajax.open('get', 'getStar.php?starName='+name);
+          ajax.open('get', 'https://v1.hitokoto.cn', false);
+          // 步骤三: 注册事件 onreadystatechange 状态改变就会调用 定义返回触发的函数 定义在send之前 不然同步请求就出问题
+          ajax.onreadystatechange = function () {
+            if (ajax.readyState == 4 && ajax.status == 200) {
+              // 步骤五: 如果能够进到这个判断 说明 数据 完美的回来了 并且请求的页面是存在的
+              // console.log(JSON.parse(ajax.responseText));
+              var text = JSON.parse(ajax.responseText);
+              // console.log(text);
+              // 重置索引i和文字
+              i = 0;
+              str = text.hitokoto;
+              $('#author').html(text.from);
+              typing();
+            }
+          }
+          // 步骤四: 发送请求
+          ajax.send();
+        } catch (err) {
+          $('#author').html('随心');
+          // 一开始默认给一个随机语句
+          randomIndex = Math.floor(data.length * Math.random());
           randomText();
           typing();
         }
       }
 
-      // 一开始默认给一个随机语句
-      randomIndex = Math.floor(data.length * Math.random());
-      randomText();
-      typing();
+      start();
 
     });
   </script>
